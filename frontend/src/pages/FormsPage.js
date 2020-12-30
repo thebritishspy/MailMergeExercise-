@@ -24,8 +24,8 @@ class FormsPage extends Component {
     isLoading:false,
     email:"",
     subject:"",
-    templateValues:new Object(),
-    preview:{}
+    templateValues:{},
+    preview:""
   };
 
   toggle = () => {
@@ -138,6 +138,7 @@ updateTemplateValue(evt){
   this.setState({
     template: evt.target.value
   });
+  
   this.state.preview = this.state.template;
   for(var key in this.state.templateValues ){
     this.state.preview = this.state.preview.replace("%%" + key + "%%",this.state.templateValues[key]);
@@ -157,47 +158,27 @@ updateTemplateValue(evt){
             <MDBCol md='12'>
               <SectionContainer>
               <MDBContainer>
-                <h2 className="text-center font-weight-bold pt-4 pb-5 mb-2"><strong>Email form  </strong></h2>
-               
+                <h2 className="text-center font-weight-bold pt-4 pb-1 mb-2"><strong>Email form  </strong></h2>
+               <hr></hr>
 
                 <form role="form" action="" method="post">
                   <MDBRow>
                     {this.state.formActivePanel1 == 1 &&
                     (<MDBCol md="12">
-                      <h3 className="font-weight-bold pl-0 my-4">
-                        <strong>Template</strong></h3>
-                        <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.template} onChange={evt => this.updateTemplateValue(evt)}/>
-                      <MDBBtn color="mdb-color" rounded className="float-right" onClick={this.handleTemplateNextClick}>next</MDBBtn>
-                    </MDBCol>)}
+                    <h3 className="font-weight-bold pl-0 my-4"><strong>Template</strong></h3>
+                     <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.template} onChange={evt => this.updateTemplateValue(evt)}/>
+                     <h3 className="font-weight-bold pl-0 my-4"><strong>Email</strong></h3> 
+                   <MDBInput label="To Email" value={this.state.email} onChange={evt => this.setState({email: evt.target.value})} className="mt-3"/>
+                   <MDBInput label="Subject" value={this.state.subject} onChange={evt => this.setState({subject: evt.target.value})} className="mt-3"/>
+                   <h3 className="font-weight-bold pl-0 my-4"><strong>Template Values</strong></h3>
+                   {this.DynamicFormCreator()}
+                   <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
+                   <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.preview}/>
+                   <MDBBtn color="success" rounded className="float-right" onClick={this.handleSubmission}>submit</MDBBtn>
+                  
+                 </MDBCol>)}
 
-                    {this.state.formActivePanel1 == 2 &&
-                    (<MDBCol md="12">
-                       <h3 className="font-weight-bold pl-0 my-4"><strong>Template</strong></h3>
-                        <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.template} onChange={evt => this.updateTemplateValue(evt)}/>
-                        <h3 className="font-weight-bold pl-0 my-4"><strong>Email</strong></h3> 
-                      <MDBInput label="To Email" value={this.state.email} onChange={evt => this.setState({email: evt.target.value})} className="mt-3"/>
-                      <MDBInput label="Subject" value={this.state.subject} onChange={evt => this.setState({subject: evt.target.value})} className="mt-3"/>
-                      <h3 className="font-weight-bold pl-0 my-4"><strong>Template Values</strong></h3>
-                      {this.state.templateValues && this.DynamicFormCreator()}
-                      <MDBBtn color="mdb-color" rounded className="float-left" onClick={this.handleNextPrevClick(1)(1)}>previous</MDBBtn>
-                      <MDBBtn color="mdb-color" rounded className="float-right" onClick={this.handleTemplateValuesNextClick}>next</MDBBtn>
-                    </MDBCol>)}
-
-                    {this.state.formActivePanel1 == 3 &&
-                    (<MDBCol md="12">
-                       <h3 className="font-weight-bold pl-0 my-4"><strong>Template</strong></h3>
-                        <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.template} onChange={evt => this.updateTemplateValue(evt)}/>
-                        <h3 className="font-weight-bold pl-0 my-4"><strong>Email</strong></h3> 
-                      <MDBInput label="To Email" value={this.state.email} readonly onChange={evt => this.setState({email: evt.target.value})} className="mt-3"/>
-                      <MDBInput label="Subject" value={this.state.subject} readonly onChange={evt => this.setState({subject: evt.target.value})} className="mt-3"/>
-                      <h3 className="font-weight-bold pl-0 my-4"><strong>Template Values</strong></h3>
-                      {this.DynamicFormCreator("readonly")}
-                      <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
-                      <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.preview} readonly/>
-                      <MDBBtn color="mdb-color" rounded className="float-left" onClick={this.handleNextPrevClick(1)(2)}>previous</MDBBtn>
-                      <MDBBtn color="success" rounded className="float-right" onClick={this.handleSubmission}>submit</MDBBtn>
-                     
-                    </MDBCol>)}
+                  
 
                     {this.state.formActivePanel1 == 4 &&
                     (<MDBCol md="12">
@@ -207,10 +188,15 @@ updateTemplateValue(evt){
                       <MDBInput label="Subject" value={this.state.subject} readonly className="mt-3"/>
                       <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
                       <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.preview}/>
-                      </div>)}
-                      {this.state.isLoading && <h2 className="text-center font-weight-bold my-4">Busy sending</h2>}
                       <MDBBtn color="mdb-color" rounded className="float-right" onClick={this.handleNextPrevClick(1)(1)}>Return to start</MDBBtn>
-                      <MDBBtn color="mdb-color" rounded className="float-left" onClick={this.handleNextPrevClick(1)(3)}>previous</MDBBtn>
+                      </div>)}
+                      {this.state.isLoading && (
+                      
+                        <h2 className="text-center font-weight-bold my-4"> <div class="spinner-grow text-success" style={{fontSize:"40px"}} role="status">
+                      </div>  &nbsp; Busy sending</h2>
+                                           
+                      )}
+                      
                     </MDBCol>)}
                   </MDBRow>
                 </form>
