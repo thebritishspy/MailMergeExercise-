@@ -13,6 +13,8 @@ import {
 } from 'mdbreact';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ReactComponent as Logo } from './assets/logo.svg';
+import LinkedinLogo from './assets/linkedin.png';
+import GaligoLogo from './assets/galigo.jpg';
 import Routes from './Routes';
 
 class App extends Component {
@@ -45,10 +47,10 @@ class App extends Component {
     return (
       <Router>
         <div className='flyout'>
-          <MDBNavbar color='indigo' dark expand='md' fixed='top' scrolling>
+          <MDBNavbar color='green' dark expand='md' fixed='top' scrolling>
             <MDBNavbarBrand href='/' className='py-0 font-weight-bold'>
-              <Logo style={{ height: '2.5rem', width: '2.5rem' }} />
-              <strong className='align-middle'>MDB React</strong>
+              <img src={GaligoLogo} style={{ height: '2.5rem',  paddingRight:"10px"}} />
+              <strong className='align-middle'>Galigo</strong>
             </MDBNavbarBrand>
             <MDBNavbarToggler
               onClick={this.toggleCollapse('mainNavbarCollapse')}
@@ -63,73 +65,7 @@ class App extends Component {
                   >
                     <strong>Home</strong>
                   </MDBNavLink>
-                </MDBNavItem>
-                <MDBNavItem>
-                  <MDBNavLink
-                    onClick={this.closeCollapse('mainNavbarCollapse')}
-                    to='/css'
-                  >
-                    <strong>CSS</strong>
-                  </MDBNavLink>
-                </MDBNavItem>
-                <MDBNavItem>
-                  <MDBNavLink
-                    onClick={this.closeCollapse('mainNavbarCollapse')}
-                    to='/components'
-                  >
-                    <strong>Components</strong>
-                  </MDBNavLink>
-                </MDBNavItem>
-                <MDBNavItem>
-                  <MDBNavLink
-                    onClick={this.closeCollapse('mainNavbarCollapse')}
-                    to='/advanced'
-                  >
-                    <strong>Advanced</strong>
-                  </MDBNavLink>
-                </MDBNavItem>
-                <MDBNavItem>
-                  <MDBNavLink
-                    onClick={this.closeCollapse('mainNavbarCollapse')}
-                    to='/navigation'
-                  >
-                    <strong>Navigation</strong>
-                  </MDBNavLink>
-                </MDBNavItem>
-                <MDBNavItem>
-                  <MDBNavLink
-                    onClick={this.closeCollapse('mainNavbarCollapse')}
-                    to='/forms'
-                  >
-                    <strong>Forms</strong>
-                  </MDBNavLink>
-                </MDBNavItem>
-                <MDBNavItem>
-                  <MDBNavLink
-                    onClick={this.closeCollapse('mainNavbarCollapse')}
-                    to='/tables'
-                  >
-                    <strong>Tables</strong>
-                  </MDBNavLink>
-                </MDBNavItem>
-                <MDBNavItem>
-                  <MDBNavLink
-                    onClick={this.closeCollapse('mainNavbarCollapse')}
-                    to='/modals'
-                  >
-                    <strong>Modals</strong>
-                  </MDBNavLink>
-                </MDBNavItem>
-                <MDBNavItem>
-                  <MDBNavLink
-                    onClick={this.closeCollapse('mainNavbarCollapse')}
-                    to='/addons'
-                  >
-                    <strong>Addons</strong>
-                  </MDBNavLink>
-                </MDBNavItem>
-
-                
+                </MDBNavItem>             
 
                 <MDBNavItem>
                   <MDBTooltip
@@ -139,53 +75,15 @@ class App extends Component {
                   >
                     <a
                       className='nav-link Ripple-parent'
-                      href='https://mdbootstrap.com/products/react-ui-kit/'
+                      href='https://www.linkedin.com/company/eleventh-hour-global/?originalSubdomain=sg'
                       target='_blank'
                       rel='noopener noreferrer'
                     >
                       <strong>
-                        <MDBIcon far icon='gem' />
+                      <img src={LinkedinLogo} style={{ height: '1.5rem', width: '1.5rem' }} />
                       </strong>
                     </a>
-                    <span>PRO</span>
-                  </MDBTooltip>
-                </MDBNavItem>
-                <MDBNavItem>
-                  <MDBTooltip
-                    placement='bottom'
-                    domElement
-                    style={{ display: 'block' }}
-                  >
-                    <a
-                      className='nav-link Ripple-parent'
-                      href='https://mdbootstrap.com/docs/react/getting-started/download/'
-                      target='_blank'
-                      rel='noopener noreferrer'
-                    >
-                      <strong>
-                        <MDBIcon icon='download' />
-                      </strong>
-                    </a>
-                    <span>FREE</span>
-                  </MDBTooltip>
-                </MDBNavItem>
-                <MDBNavItem className='mr-2'>
-                  <MDBTooltip
-                    placement='bottom'
-                    domElement
-                    style={{ display: 'block' }}
-                  >
-                    <a
-                      className='nav-link Ripple-parent'
-                      href='https://mdbootstrap.com/support/cat/react/'
-                      target='_blank'
-                      rel='noopener noreferrer'
-                    >
-                      <strong>
-                        <MDBIcon icon='question-circle' />
-                      </strong>
-                    </a>
-                    <span>SUPPORT</span>
+                    <span>Linkedin</span>
                   </MDBTooltip>
                 </MDBNavItem>
               </MDBNavbarNav>
@@ -195,10 +93,10 @@ class App extends Component {
           <main style={{ marginTop: '4rem' }}>
             <Routes />
           </main>
-          <MDBFooter color='indigo'>
+          <MDBFooter color='green'>
             <p className='footer-copyright mb-0 py-3 text-center'>
               &copy; {new Date().getFullYear()} Copyright:
-              <a href='https://www.MDBootstrap.com'> MDBootstrap.com </a>
+              <a href='https://www.galigo.com'> Galigo.com </a>
             </p>
           </MDBFooter>
         </div>
