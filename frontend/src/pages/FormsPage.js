@@ -63,7 +63,7 @@ class FormsPage extends Component {
     return this.handleNextPrevClick(1)(3)(e);
   }
   handleSubmission = (e)=>{
-    const recipeUrl = 'http://localhost:9000/api/sendmail';
+    const recipeUrl = 'http://localhost:9000/api/sendgridmail';
     const postBody = {
         template: this.state.template,
         templateValues : this.state.templateValues,
@@ -83,7 +83,7 @@ class FormsPage extends Component {
         .then(res => res.json())
         .then(email => {
            console.log(email);
-            this.setState({ preview:email.preview, isLoading:false });
+            this.setState({ preview:email.text, isLoading:false });
         });
   }
   handleNextPrevClick = (a) => (param) => (e) => {
