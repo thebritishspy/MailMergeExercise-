@@ -22,6 +22,7 @@ class FormsPage extends Component {
     formActivePanel1Changed: false,
     template : "",
     isLoading:false,
+    isError:false,
     email:"",
     subject:"",
     templateValues:{},
@@ -63,28 +64,43 @@ class FormsPage extends Component {
     return this.handleNextPrevClick(1)(3)(e);
   }
   handleSubmission = (e)=>{
-    const recipeUrl = 'http://localhost:9000/api/sendgridmail';
-    const postBody = {
-        template: this.state.template,
-        templateValues : this.state.templateValues,
-        email : this.state.email,
-        subject : this.state.subject
-    };
-    const requestMetadata = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(postBody)
-    };
-    this.setState({  isLoading:true });
-    this.handleNextPrevClick(1)(4)(e);
-    fetch(recipeUrl, requestMetadata)
-        .then(res => res.json())
-        .then(email => {
-           console.log(email);
-            this.setState({ preview:email.text, isLoading:false });
-        });
+  //e.currentTarget.form.reportValidity();
+    if(e.currentTarget.form.checkValidity()){
+      
+      const recipeUrl = 'http://localhost:9000/api/sendgridmail';
+      const postBody = {
+          template: this.state.template,
+          templateValues : this.state.templateValues,
+          email : this.state.email,
+          subject : this.state.subject
+      };
+      const requestMetadata = {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postBody)
+      };
+      this.setState({  isLoading:true,isError:false });
+      this.handleNextPrevClick(1)(4)(e);
+
+      fetch(recipeUrl, requestMetadata)
+          .then(res => res.json())
+          .then(email => {
+              console.log(email);
+              this.setState({ preview:email.text, isLoading:false, isError:false });
+
+          }).catch(err => {
+            const errStatus = err.response ? err.response.status : 500;
+            
+              this.setState({ isLoading:false, isError:true, error: errStatus});
+           
+          });
+     }else{
+      e.currentTarget.form.reportValidity()
+     }
+      
+
   }
   handleNextPrevClick = (a) => (param) => (e) => {
     
@@ -108,7 +124,7 @@ DynamicFormCreator(readonly){
   return (
     <div>
     {Object.keys(this.state.templateValues).map( (key, ind) => {return (
-      <MDBInput label={beautifyVariable(key)} value={this.state.templateValues[key]}  onChange={evt => this.updateFormValue(key)(evt)} className="mt-3"/>
+      <MDBInput label={beautifyVariable(key)} value={this.state.templateValues[key]}  onChange={evt => this.updateFormValue(key)(evt)} className="mt-3 " required/>
     )})}
     </div>
   );
@@ -161,30 +177,31 @@ updateTemplateValue(evt){
                 <h2 className="text-center font-weight-bold pt-4 pb-1 mb-2"><strong>Email form  </strong></h2>
                <hr></hr>
 
-                <form role="form" action="" method="post">
+              
                   <MDBRow>
                     {this.state.formActivePanel1 == 1 &&
                     (<MDBCol md="12">
+                        <form role="form" id="email_create_panel" class="needs-validation" action="" method="post" novalidate>
                     <h3 className="font-weight-bold pl-0 my-4"><strong>Template</strong></h3>
                      <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.template} onChange={evt => this.updateTemplateValue(evt)}/>
                      <h3 className="font-weight-bold pl-0 my-4"><strong>Email</strong></h3> 
-                   <MDBInput label="To Email" value={this.state.email} onChange={evt => this.setState({email: evt.target.value})} className="mt-3"/>
-                   <MDBInput label="Subject" value={this.state.subject} onChange={evt => this.setState({subject: evt.target.value})} className="mt-3"/>
+                   <MDBInput label="To Email" type="email" value={this.state.email} onChange={evt => this.setState({email: evt.target.value})} className="mt-3 " required/>
+                   <MDBInput label="Subject" value={this.state.subject} onChange={evt => this.setState({subject: evt.target.value})} className="mt-3 " required/>
                    <h3 className="font-weight-bold pl-0 my-4"><strong>Template Values</strong></h3>
                    {this.DynamicFormCreator()}
                    <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
-                   <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.preview}/>
-                   <MDBBtn color="success" rounded className="float-right" onClick={this.handleSubmission}>submit</MDBBtn>
-                  
+                   <MDBInput label="Template" className="" type="textarea" id="templatetext" rows="6" value={this.state.preview} required/>
+                   <MDBBtn color="success" rounded className="float-right" onClick={this.handleSubmission} type="submit">submit</MDBBtn>
+                   </form>
                  </MDBCol>)}
 
                   
 
                     {this.state.formActivePanel1 == 4 &&
                     (<MDBCol md="12">
-
-                      {!this.state.isLoading && (<div><h2 className="text-center font-weight-bold my-4">Email sent!</h2>
-                      <MDBInput label="To Email" value={this.state.email} readonly className="mt-3"/>
+                         <form role="form" id="email_send_panel" class="needs-validation" action="" method="post">
+                      {!this.state.isLoading && !this.state.isError && (<div><h2 className="text-center font-weight-bold my-4">Email sent!</h2>
+                      <MDBInput label="To Email" type="email" value={this.state.email} readonly className="mt-3"/>
                       <MDBInput label="Subject" value={this.state.subject} readonly className="mt-3"/>
                       <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
                       <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.preview}/>
@@ -196,10 +213,16 @@ updateTemplateValue(evt){
                       </div>  &nbsp; Busy sending</h2>
                                            
                       )}
-                      
+                       {!this.state.isLoading && this.state.isError && (
+                      <div>
+                        <h2 className="text-center font-weight-bold my-4"> <MDBIcon icon="exclamation-triangle" size="lg"/>  &nbsp; Error: Email not sent. Code {this.state.error} </h2>
+                       <MDBBtn color="mdb-color" rounded className="float-right" onClick={this.handleNextPrevClick(1)(1)}>Return to start</MDBBtn>
+                      </div>
+                      )}
+                       </form>
                     </MDBCol>)}
                   </MDBRow>
-                </form>
+                
               </MDBContainer>
               </SectionContainer>
             </MDBCol>
