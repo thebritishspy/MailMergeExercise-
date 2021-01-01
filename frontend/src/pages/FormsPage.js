@@ -105,8 +105,10 @@ updateFormValue = (key) => (evt) => {
   });
 }
 updateTemplateValue(evt){
+  var tTemplate = evt.target.value;
+  console.log(tTemplate);
   //This matches out all keys of the format %%<text>%% this creates a new template values with the new keys, and transfers over the values of the previous template values with corresponding keys. 
-    var keys = this.state.template.match(/%%([a-zA-Z_]*)%%/g);
+    var keys =tTemplate.match(/%%([a-zA-Z_]*)%%/g);
   var prevtemplateValues = {...this.state.templateValues};
   this.state.templateValues = {};
   if(keys){
@@ -119,15 +121,15 @@ updateTemplateValue(evt){
     });
   }
   
-  this.setState({
-    template: evt.target.value
-  });
+  
   //this recalculates the preview
-  this.state.preview = this.state.template;
+  this.state.preview = tTemplate
   for(var key in this.state.templateValues ){
     this.state.preview = this.state.preview.replace("%%" + key + "%%",this.state.templateValues[key]);
   }
   this.setState({
+    template: tTemplate,
+    templateValues: this.state.templateValues,
     preview: this.state.preview 
   });
 }
@@ -150,7 +152,7 @@ updateTemplateValue(evt){
                     (<MDBCol md="12">
                         <form role="form" id="email_create_panel" class="needs-validation" action="" method="post" novalidate>
                     <h3 className="font-weight-bold pl-0 my-4"><strong>Template</strong></h3>
-                     <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.template} onChange={evt => this.updateTemplateValue(evt)}/>
+                     <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.template} onKeyDown={evt => this.updateTemplateValue(evt)} onChange={evt => this.updateTemplateValue(evt)}/>
                      <h3 className="font-weight-bold pl-0 my-4"><strong>Email</strong></h3> 
                    <MDBInput label="To Email" type="email" value={this.state.email} onChange={evt => this.setState({email: evt.target.value})} className="mt-3 " required/>
                    <MDBInput label="Subject" value={this.state.subject} onChange={evt => this.setState({subject: evt.target.value})} className="mt-3 " required/>
@@ -171,8 +173,8 @@ updateTemplateValue(evt){
                     (<MDBCol md="12"><MDBAnimation type="fadeIn">
                          <form role="form" id="email_send_panel" class="needs-validation" action="" method="post">
                       {!this.state.isLoading && !this.state.isError && (<div><h2 className="text-center font-weight-bold my-4">Email sent!</h2>
-                      <MDBInput label="To Email" type="email" value={this.state.email} readonly className="mt-3"/>
-                      <MDBInput label="Subject" value={this.state.subject} readonly className="mt-3"/>
+                      <MDBInput label="To Email" type="email" value={this.state.email} readOnly className="mt-3"/>
+                      <MDBInput label="Subject" value={this.state.subject} readOnly className="mt-3"/>
                       <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
                       <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.preview}/>
                       <MDBBtn color="mdb-color" rounded className="float-right" onClick={this.handleNextPrevClick(1)(1)}>Return to start</MDBBtn>
