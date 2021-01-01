@@ -6,6 +6,7 @@ import {
   MDBInput,
   MDBBtn,
   MDBIcon,
+  MDBAnimation
 } from 'mdbreact';
 import SectionContainer from '../components/sectionContainer';
 class FormsPage extends Component {
@@ -28,30 +29,8 @@ class FormsPage extends Component {
       ['formActivePanel' + a + 'Changed']: true
     });
   }
-  handleTemplateNextClick = (e) => {
-    this.state.templateValues = {};
-    var keys = this.state.template.match(/%%([a-zA-Z_]*)%%/g);
-    if(keys){
-      keys = keys.map((el)=>{return el.slice(2,el.length-2);});
-      keys.forEach((val,ind)=>{this.state.templateValues[val]="";});
-    }
    
-    console.log(this.state); 
-    return this.handleNextPrevClick(1)(2)(e);
-  }
-  handleTemplateValuesNextClick = (e) => {
-    this.state.preview = this.state.template;
-    for(var key in this.state.templateValues ){
-      this.state.preview = this.state.preview.replace("%%" + key + "%%",this.state.templateValues[key]);
-    }
-    this.setState({
-      preview: this.state.preview 
-    });
-    console.log(this.state); 
-    return this.handleNextPrevClick(1)(3)(e);
-  }
   handleSubmission = (e)=>{
-  //e.currentTarget.form.reportValidity();
     if(e.currentTarget.form.checkValidity()){
       
       const recipeUrl = 'http://localhost:9000/api/sendmail';
@@ -78,16 +57,13 @@ class FormsPage extends Component {
               this.setState({ preview:email.text, isLoading:false, isError:false });
 
           }).catch(err => {
-            const errStatus = err.response ? err.response.status : 500;
+              const errStatus = err.response ? err.response.status : 500;
             
               this.setState({ isLoading:false, isError:true, error: errStatus});
            
           });
-     }else{
-      e.currentTarget.form.reportValidity()
      }
       
-
   }
   handleNextPrevClick = (a) => (param) => (e) => {
     
@@ -97,12 +73,7 @@ class FormsPage extends Component {
     });
   }
   
-calculateAutofocus = (a) => {
-  if (this.state['formActivePanel' + a + 'Changed']) {
-    return true
-  }
-}
-DynamicFormCreator(readonly){
+DynamicFormCreator(){
   const beautifyVariable = (variableName) =>{
     var str = variableName.toString().split("_").map((el)=>{return el.charAt(0).toUpperCase()  + el.slice(1);}).join(" ");
     return str;
@@ -111,13 +82,15 @@ DynamicFormCreator(readonly){
   return (
     <div>
     {Object.keys(this.state.templateValues).map( (key, ind) => {return (
+      
       <MDBInput label={beautifyVariable(key)} value={this.state.templateValues[key]}  onChange={evt => this.updateFormValue(key)(evt)} className="mt-3 " required/>
-    )})}
+      )})}
     </div>
   );
 
 };
 updateFormValue = (key) => (evt) => {
+  //Everytime the user changes one of the template values, this updates the value in state and recalculates the preview. 
   this.state.templateValues[key] =  evt.target.value;
 
   this.setState({
@@ -132,16 +105,24 @@ updateFormValue = (key) => (evt) => {
   });
 }
 updateTemplateValue(evt){
-  var keys = this.state.template.match(/%%([a-zA-Z_]*)%%/g);
+  //This matches out all keys of the format %%<text>%% this creates a new template values with the new keys, and transfers over the values of the previous template values with corresponding keys. 
+    var keys = this.state.template.match(/%%([a-zA-Z_]*)%%/g);
+  var prevtemplateValues = {...this.state.templateValues};
+  this.state.templateValues = {};
   if(keys){
     keys = keys.map((el)=>{return el.slice(2,el.length-2);});
-    keys.forEach((val,ind)=>{if(!this.state.templateValues[val])this.state.templateValues[val]="";});
+    keys.forEach((val,ind)=>{
+      this.state.templateValues[val]="";
+      if(prevtemplateValues[val]){
+        this.state.templateValues[val]=prevtemplateValues[val];
+      }
+    });
   }
   
   this.setState({
     template: evt.target.value
   });
-  
+  //this recalculates the preview
   this.state.preview = this.state.template;
   for(var key in this.state.templateValues ){
     this.state.preview = this.state.preview.replace("%%" + key + "%%",this.state.templateValues[key]);
@@ -173,10 +154,13 @@ updateTemplateValue(evt){
                      <h3 className="font-weight-bold pl-0 my-4"><strong>Email</strong></h3> 
                    <MDBInput label="To Email" type="email" value={this.state.email} onChange={evt => this.setState({email: evt.target.value})} className="mt-3 " required/>
                    <MDBInput label="Subject" value={this.state.subject} onChange={evt => this.setState({subject: evt.target.value})} className="mt-3 " required/>
+                
                    <h3 className="font-weight-bold pl-0 my-4"><strong>Template Values</strong></h3>
                    {this.DynamicFormCreator()}
+                   
                    <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
                    <MDBInput label="Template" className="" type="textarea" id="templatetext" rows="6" value={this.state.preview} required/>
+                   
                    <MDBBtn color="success" rounded className="float-right" onClick={this.handleSubmission} type="submit">submit</MDBBtn>
                    </form>
                  </MDBCol>)}
@@ -184,7 +168,7 @@ updateTemplateValue(evt){
                   
 
                     {this.state.formActivePanel1 == 4 &&
-                    (<MDBCol md="12">
+                    (<MDBCol md="12"><MDBAnimation type="fadeIn">
                          <form role="form" id="email_send_panel" class="needs-validation" action="" method="post">
                       {!this.state.isLoading && !this.state.isError && (<div><h2 className="text-center font-weight-bold my-4">Email sent!</h2>
                       <MDBInput label="To Email" type="email" value={this.state.email} readonly className="mt-3"/>
@@ -205,7 +189,7 @@ updateTemplateValue(evt){
                        <MDBBtn color="mdb-color" rounded className="float-right" onClick={this.handleNextPrevClick(1)(1)}>Return to start</MDBBtn>
                       </div>
                       )}
-                       </form>
+                       </form></MDBAnimation>
                     </MDBCol>)}
                   </MDBRow>
                 

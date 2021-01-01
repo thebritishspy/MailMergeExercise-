@@ -9,10 +9,10 @@ import {
   MDBFooter,
   MDBNavLink,
   MDBTooltip,
-  MDBIcon
+  MDBIcon,
+  MDBAnimation
 } from 'mdbreact';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { ReactComponent as Logo } from './assets/logo.svg';
 import LinkedinLogo from './assets/linkedin.png';
 import GaligoLogo from './assets/galigo.jpg';
 import Routes from './Routes';
@@ -57,15 +57,7 @@ class App extends Component {
             />
             <MDBCollapse id='mainNavbarCollapse' isOpen={collapseID} navbar>
               <MDBNavbarNav right>
-                <MDBNavItem>
-                  <MDBNavLink
-                    exact
-                    to='/'
-                    onClick={this.closeCollapse('mainNavbarCollapse')}
-                  >
-                    <strong>Home</strong>
-                  </MDBNavLink>
-                </MDBNavItem>             
+                         
 
                 <MDBNavItem>
                   <MDBTooltip
@@ -80,7 +72,7 @@ class App extends Component {
                       rel='noopener noreferrer'
                     >
                       <strong>
-                      <img src={LinkedinLogo} style={{ height: '1.5rem', width: '1.5rem' }} />
+                      <img src={LinkedinLogo} style={{ height: '1.5rem' }} />
                       </strong>
                     </a>
                     <span>Linkedin</span>
