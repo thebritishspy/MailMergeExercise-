@@ -6,18 +6,10 @@ import {
   MDBInput,
   MDBBtn,
   MDBIcon,
-  MDBCard,
-  MDBCardBody,
-  MDBModal,
-  MDBModalBody,
-  MDBModalFooter
 } from 'mdbreact';
-import DocsLink from '../components/docsLink';
 import SectionContainer from '../components/sectionContainer';
-import DynamicForm from '../components/dynamicform';
 class FormsPage extends Component {
   state = {
-    modal: false,
     formActivePanel1: 1,
     formActivePanel1Changed: false,
     template : "",
@@ -29,12 +21,7 @@ class FormsPage extends Component {
     preview:""
   };
 
-  toggle = () => {
-    const { modal } = this.state;
-    this.setState({
-      modal: !modal
-    });
-  };
+
   swapFormActive = (a) => (param) => (e) => {
     this.setState({
       ['formActivePanel' + a]: param,
@@ -67,7 +54,7 @@ class FormsPage extends Component {
   //e.currentTarget.form.reportValidity();
     if(e.currentTarget.form.checkValidity()){
       
-      const recipeUrl = 'http://localhost:9000/api/sendgridmail';
+      const recipeUrl = 'http://localhost:9000/api/sendmail';
       const postBody = {
           template: this.state.template,
           templateValues : this.state.templateValues,
@@ -164,7 +151,6 @@ updateTemplateValue(evt){
   });
 }
   render() {
-    const { modal } = this.state;
 
     return (
       <MDBContainer className='mt-5'>
