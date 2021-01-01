@@ -9,6 +9,8 @@ import {
   MDBAnimation
 } from 'mdbreact';
 import SectionContainer from '../components/sectionContainer';
+import CreatableSelect from 'react-select/creatable';
+
 class FormsPage extends Component {
   state = {
     formActivePanel1: 1,
@@ -17,11 +19,12 @@ class FormsPage extends Component {
     isLoading:false,
     isError:false,
     email:"",
-    subject:"",
+    subjects:{},
     templateValues:{},
-    preview:""
+    preview:{},
+    members:[]
   };
-
+  
 
   swapFormActive = (a) => (param) => (e) => {
     this.setState({
@@ -73,59 +76,105 @@ class FormsPage extends Component {
     });
   }
   
-DynamicFormCreator(){
+DynamicFormCreator(member){
   const beautifyVariable = (variableName) =>{
     var str = variableName.toString().split("_").map((el)=>{return el.charAt(0).toUpperCase()  + el.slice(1);}).join(" ");
     return str;
   };
-  console.log(this.state);
+  if(!this.state.templateValues)this.state.templateValues = {};
   return (
     <div>
-    {Object.keys(this.state.templateValues).map( (key, ind) => {return (
+    {Object.keys(this.state.templateValues[member]).map( (key, ind) => {return (
       
-      <MDBInput label={beautifyVariable(key)} value={this.state.templateValues[key]}  onChange={evt => this.updateFormValue(key)(evt)} className="mt-3 " required/>
+      <MDBInput label={beautifyVariable(key)} value={this.state.templateValues[member][key]}  onChange={evt => this.updateFormValue(key,member)(evt)} className="mt-3 " required/>
       )})}
     </div>
   );
 
 };
-updateFormValue = (key) => (evt) => {
-  //Everytime the user changes one of the template values, this updates the value in state and recalculates the preview. 
-  this.state.templateValues[key] =  evt.target.value;
+MemberFormCreator(){
+  const beautifyVariable = (variableName) =>{
+    var str = variableName.toString().split("_").map((el)=>{return el.charAt(0).toUpperCase()  + el.slice(1);}).join(" ");
+    return str;
+  };
+  console.log(this.state);
+  if(!this.state.templateValues)this.state.templateValues = {};
+  return (
+    <div>
+    {Object.keys(this.state.members).map( (key, ind) => {return (
+      <div>
+          <h3 className="font-weight-bold pl-0 my-4"><strong>Info for {member}</strong></h3> 
+        <MDBInput label="To Email" type="email" value={this.state.members[key]} onChange={evt => {this.state.members[key] = evt.target.value; this.setState({members: this.state.members });}} className="mt-3 " required/>
+        <MDBInput label="Subject" value={this.state.subjects[key]} onChange={evt => {this.state.subjects[key] = evt.target.value; this.setState({subjects: evt.target.value});}} className="mt-3 " required/>
 
+        <h3 className="font-weight-bold pl-0 my-4"><strong>Template Values</strong></h3>
+        {this.DynamicFormCreator(key)}
+        
+        <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
+        <MDBInput label="Template" className="" type="textarea" id="templatetext" rows="6" value={this.state.preview[key]} required/>
+        
+        <MDBBtn color="success" rounded className="float-right" onClick={this.handleSubmission} type="submit">submit</MDBBtn>
+      </div>
+      )})}
+    </div>
+  );
+
+};
+handleChange = (newValue, actionMeta) => {
+  console.group('Value Changed');
+  console.log(newValue);
+  this.state.members = newValue.map((val)=>{return val.label});
+  this.setState({
+    members : this.state.members
+  });
+  console.log(`action: ${actionMeta.action}`);
+  console.groupEnd();
+  this.updateKeys(this.state.template);
+  this.updatePreviews(this.state.template);
+};
+updateFormValue = (key, member) => (evt) => {
+  //Everytime the user changes one of the template values, this updates the value in state and recalculates the preview. 
+  if(!this.state.templateValues[member])this.state.templateValues[member] = {};
+  
+  this.state.templateValues[member][key] =  evt.target.value;
   this.setState({
     templateValues: this.state.templateValues
   });
-  this.state.preview = this.state.template;
-  for(var kkey in this.state.templateValues ){
-    this.state.preview = this.state.preview.replace("%%" + kkey + "%%",this.state.templateValues[kkey]);
+  if(!this.state.preview)this.state.preview = {};
+  this.state.preview[member] = this.state.template;
+  for(var kkey in this.state.templateValues[member] ){
+    this.state.preview[member] = this.state.preview[member] .replace("%%" + kkey + "%%",this.state.templateValues[member][kkey]);
   }
   this.setState({
     preview: this.state.preview 
   });
 }
-updateTemplateValue(evt){
-  var tTemplate = evt.target.value;
-  console.log(tTemplate);
-  //This matches out all keys of the format %%<text>%% this creates a new template values with the new keys, and transfers over the values of the previous template values with corresponding keys. 
-    var keys =tTemplate.match(/%%([a-zA-Z_]*)%%/g);
-  var prevtemplateValues = {...this.state.templateValues};
-  this.state.templateValues = {};
-  if(keys){
-    keys = keys.map((el)=>{return el.slice(2,el.length-2);});
-    keys.forEach((val,ind)=>{
-      this.state.templateValues[val]="";
-      if(prevtemplateValues[val]){
-        this.state.templateValues[val]=prevtemplateValues[val];
-      }
-    });
+updateKeys(tTemplate){
+  var keys = tTemplate.match(/%%([a-zA-Z_]*)%%/g);
+  for(var member in this.state.members){
+    var prevtemplateValues = {...this.state.templateValues[member]};
+    if(!prevtemplateValues)prevtemplateValues = {};
+    if(!prevtemplateValues[member])prevtemplateValues[member] ={};
+    this.state.templateValues[member] = {};
+    if(keys){
+      keys = keys.map((el)=>{return el.slice(2,el.length-2);});
+      keys.forEach((val,ind)=>{
+        this.state.templateValues[member][val]="";
+        if(prevtemplateValues[member][val]){
+          this.state.templateValues[member][val]=prevtemplateValues[val];
+        }
+      });
+    }
   }
-  
-  
-  //this recalculates the preview
-  this.state.preview = tTemplate
-  for(var key in this.state.templateValues ){
-    this.state.preview = this.state.preview.replace("%%" + key + "%%",this.state.templateValues[key]);
+}
+updatePreviews(tTemplate){
+  for(var member in this.state.members){
+    //this recalculates the preview
+    if(!this.state.preview)this.state.preview = {};
+    this.state.preview[member] = tTemplate;
+    for(var key in this.state.templateValues[member] ){
+      this.state.preview[member]  = this.state.preview[member].replace("%%" + key + "%%",this.state.templateValues[member][key]);
+    }
   }
   this.setState({
     template: tTemplate,
@@ -133,8 +182,14 @@ updateTemplateValue(evt){
     preview: this.state.preview 
   });
 }
+updateTemplateValue = (evt) => {
+  var tTemplate = evt.target.value;
+  console.log(tTemplate);
+  //This matches out all keys of the format %%<text>%% this creates a new template values with the new keys, and transfers over the values of the previous template values with corresponding keys. 
+  this.updateKeys(tTemplate);
+  this.updatePreviews(tTemplate);
+}
   render() {
-
     return (
       <MDBContainer className='mt-5'>
         
@@ -150,15 +205,18 @@ updateTemplateValue(evt){
                   <MDBRow>
                     {this.state.formActivePanel1 == 1 &&
                     (<MDBCol md="12">
-                        <form role="form" id="email_create_panel" class="needs-validation" action="" method="post" novalidate>
+                        <form role="form" id="email_create_panel" className="needs-validation" action="" method="post" noValidate>
                     <h3 className="font-weight-bold pl-0 my-4"><strong>Template</strong></h3>
                      <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.template} onKeyDown={evt => this.updateTemplateValue(evt)} onChange={evt => this.updateTemplateValue(evt)}/>
                      <h3 className="font-weight-bold pl-0 my-4"><strong>Email</strong></h3> 
                    <MDBInput label="To Email" type="email" value={this.state.email} onChange={evt => this.setState({email: evt.target.value})} className="mt-3 " required/>
                    <MDBInput label="Subject" value={this.state.subject} onChange={evt => this.setState({subject: evt.target.value})} className="mt-3 " required/>
-                
+                   <CreatableSelect
+                    isMulti
+                    onChange={this.handleChange}
+                  />
                    <h3 className="font-weight-bold pl-0 my-4"><strong>Template Values</strong></h3>
-                   {this.DynamicFormCreator()}
+                   {this.MemberFormCreator()}
                    
                    <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
                    <MDBInput label="Template" className="" type="textarea" id="templatetext" rows="6" value={this.state.preview} required/>
