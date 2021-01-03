@@ -18,8 +18,9 @@ class FormsPage extends Component {
     template : "",
     isLoading:false,
     isError:false,
-    email:"",
+    emails:[],
     subjects:{},
+    templatekeys:[],
     templateValues:{},
     preview:{},
     members:[]
@@ -32,16 +33,22 @@ class FormsPage extends Component {
       ['formActivePanel' + a + 'Changed']: true
     });
   }
-   
+  wrapMember(member){
+    return {email: member, templateValues:this.state.templateValues[member],subject: this.state.subjects[member]};
+  }
   handleSubmission = (e)=>{
+    console.log(this.state);
     if(e.currentTarget.form.checkValidity()){
       
       const recipeUrl = 'http://localhost:9000/api/sendmail';
+      var members = [];
+      for(var memberkey in this.state.members){
+        var member = this.state.members[memberkey];
+        members.push(this.wrapMember(member));
+      }
       const postBody = {
           template: this.state.template,
-          templateValues : this.state.templateValues,
-          email : this.state.email,
-          subject : this.state.subject
+          members: members
       };
       const requestMetadata = {
           method: 'POST',
@@ -56,9 +63,9 @@ class FormsPage extends Component {
       fetch(recipeUrl, requestMetadata)
           .then(res => res.json())
           .then(email => {
-              console.log(email);
-              this.setState({ preview:email.text, isLoading:false, isError:false });
-
+              console.log("email", email);
+              this.setState({ preview:email, isLoading:false, isError:false });
+              
           }).catch(err => {
               const errStatus = err.response ? err.response.status : 500;
             
@@ -66,7 +73,8 @@ class FormsPage extends Component {
            
           });
      }
-      
+     e.currentTarget.form.reportValidity();
+     return false;
   }
   handleNextPrevClick = (a) => (param) => (e) => {
     
@@ -82,6 +90,7 @@ DynamicFormCreator(member){
     return str;
   };
   if(!this.state.templateValues)this.state.templateValues = {};
+  if(!this.state.templateValues[member])this.state.templateValues[member] = {};
   return (
     <div>
     {Object.keys(this.state.templateValues[member]).map( (key, ind) => {return (
@@ -98,24 +107,38 @@ MemberFormCreator(){
     return str;
   };
   console.log(this.state);
+  if(!this.state.members)this.state.members = {};
   if(!this.state.templateValues)this.state.templateValues = {};
   return (
     <div>
     {Object.keys(this.state.members).map( (key, ind) => {return (
       <div>
-          <h3 className="font-weight-bold pl-0 my-4"><strong>Info for {member}</strong></h3> 
-        <MDBInput label="To Email" type="email" value={this.state.members[key]} onChange={evt => {this.state.members[key] = evt.target.value; this.setState({members: this.state.members });}} className="mt-3 " required/>
-        <MDBInput label="Subject" value={this.state.subjects[key]} onChange={evt => {this.state.subjects[key] = evt.target.value; this.setState({subjects: evt.target.value});}} className="mt-3 " required/>
+          <h3 className="font-weight-bold pl-0 my-4"><strong>Info for {this.state.members[key]}</strong></h3> 
+       {/* <MDBInput readOnly label="To Email" type="email" value={this.state.members[key]} onChange={evt => {this.state.members[key] = evt.target.value; this.setState({members: this.state.members });}} className="mt-3 " required/>
+       */} <MDBInput label="Subject" value={this.state.subjects[this.state.members[key]]} onChange={evt => {this.state.subjects[this.state.members[key]] = evt.target.value; this.setState({subjects: this.state.subjects});}} className="mt-3 " required/>
 
-        <h3 className="font-weight-bold pl-0 my-4"><strong>Template Values</strong></h3>
-        {this.DynamicFormCreator(key)}
+        <h5 className="font-weight-bold pl-0 my-4"><strong>Template Values</strong></h5>
+        {this.DynamicFormCreator(this.state.members[key])}
         
-        <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
-        <MDBInput label="Template" className="" type="textarea" id="templatetext" rows="6" value={this.state.preview[key]} required/>
-        
-        <MDBBtn color="success" rounded className="float-right" onClick={this.handleSubmission} type="submit">submit</MDBBtn>
+        <h5 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h5>
+        <MDBInput label="Template" className="" type="textarea" id="templatetext" rows="6" value={this.state.preview[this.state.members[key]]} required/>
+        <hr></hr>
       </div>
       )})}
+    </div>
+  );
+
+};
+PreviewCreator(){
+  return (
+    <div>
+    {Object.keys(this.state.members).map( (key, ind) =>{return (
+      
+      <div>
+          <MDBInput readOnly label="To Email" type="email" value={this.state.members[key]} readOnly className="mt-3"/>
+          <MDBInput readOnly label="Subject" value={this.state.subjects[this.state.members[key]]} readOnly className="mt-3"/>
+          <MDBInput readOnly label="Template" type="textarea" id="templatetext" rows="6" value={this.state.preview[this.state.members[key]]}/>
+      </div>      )})}
     </div>
   );
 
@@ -125,7 +148,8 @@ handleChange = (newValue, actionMeta) => {
   console.log(newValue);
   this.state.members = newValue.map((val)=>{return val.label});
   this.setState({
-    members : this.state.members
+    members : this.state.members,
+    emails: newValue
   });
   console.log(`action: ${actionMeta.action}`);
   console.groupEnd();
@@ -151,29 +175,34 @@ updateFormValue = (key, member) => (evt) => {
 }
 updateKeys(tTemplate){
   var keys = tTemplate.match(/%%([a-zA-Z_]*)%%/g);
-  for(var member in this.state.members){
-    var prevtemplateValues = {...this.state.templateValues[member]};
-    if(!prevtemplateValues)prevtemplateValues = {};
-    if(!prevtemplateValues[member])prevtemplateValues[member] ={};
-    this.state.templateValues[member] = {};
-    if(keys){
-      keys = keys.map((el)=>{return el.slice(2,el.length-2);});
-      keys.forEach((val,ind)=>{
-        this.state.templateValues[member][val]="";
-        if(prevtemplateValues[member][val]){
-          this.state.templateValues[member][val]=prevtemplateValues[val];
+  if(keys){
+    keys = keys.map((el)=>{return el.slice(2,el.length-2);});
+    this.state.templatekeys = keys;
+    for(var memberkey in this.state.members){
+      var member = this.state.members[memberkey];
+      var prevtemplateValues = {...this.state.templateValues[member]};
+      if(!prevtemplateValues)prevtemplateValues = {};
+      this.state.templateValues[member] = {};
+      for(var key in keys){
+        var vals = keys[key];
+        this.state.templateValues[member][vals]="";
+        if(prevtemplateValues[vals]){
+          this.state.templateValues[member][vals]=prevtemplateValues[vals];
         }
-      });
+      }
     }
   }
 }
 updatePreviews(tTemplate){
-  for(var member in this.state.members){
+  for(var memberkey in this.state.members){
+    var member = this.state.members[memberkey];
     //this recalculates the preview
     if(!this.state.preview)this.state.preview = {};
     this.state.preview[member] = tTemplate;
-    for(var key in this.state.templateValues[member] ){
-      this.state.preview[member]  = this.state.preview[member].replace("%%" + key + "%%",this.state.templateValues[member][key]);
+    for(var key in this.state.templatekeys){
+      var vals = this.state.templatekeys[key];
+      console.log(this.state.templatekeys);
+      this.state.preview[member]  = this.state.preview[member].replace("%%" + vals + "%%",this.state.templateValues[member][vals]);
     }
   }
   this.setState({
@@ -182,6 +211,7 @@ updatePreviews(tTemplate){
     preview: this.state.preview 
   });
 }
+
 updateTemplateValue = (evt) => {
   var tTemplate = evt.target.value;
   console.log(tTemplate);
@@ -205,21 +235,18 @@ updateTemplateValue = (evt) => {
                   <MDBRow>
                     {this.state.formActivePanel1 == 1 &&
                     (<MDBCol md="12">
-                        <form role="form" id="email_create_panel" className="needs-validation" action="" method="post" noValidate>
+                        <form role="form" id="email_create_panel" className="needs-validation" action="" method="post">
                     <h3 className="font-weight-bold pl-0 my-4"><strong>Template</strong></h3>
                      <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.template} onKeyDown={evt => this.updateTemplateValue(evt)} onChange={evt => this.updateTemplateValue(evt)}/>
-                     <h3 className="font-weight-bold pl-0 my-4"><strong>Email</strong></h3> 
-                   <MDBInput label="To Email" type="email" value={this.state.email} onChange={evt => this.setState({email: evt.target.value})} className="mt-3 " required/>
-                   <MDBInput label="Subject" value={this.state.subject} onChange={evt => this.setState({subject: evt.target.value})} className="mt-3 " required/>
+                     <h3 className="font-weight-bold pl-0 my-4"><strong>Emails</strong></h3> 
+                   
                    <CreatableSelect
                     isMulti
+                    value={this.state.emails}
                     onChange={this.handleChange}
                   />
-                   <h3 className="font-weight-bold pl-0 my-4"><strong>Template Values</strong></h3>
+                  <hr></hr>
                    {this.MemberFormCreator()}
-                   
-                   <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
-                   <MDBInput label="Template" className="" type="textarea" id="templatetext" rows="6" value={this.state.preview} required/>
                    
                    <MDBBtn color="success" rounded className="float-right" onClick={this.handleSubmission} type="submit">submit</MDBBtn>
                    </form>
@@ -231,10 +258,10 @@ updateTemplateValue = (evt) => {
                     (<MDBCol md="12"><MDBAnimation type="fadeIn">
                          <form role="form" id="email_send_panel" class="needs-validation" action="" method="post">
                       {!this.state.isLoading && !this.state.isError && (<div><h2 className="text-center font-weight-bold my-4">Email sent!</h2>
-                      <MDBInput label="To Email" type="email" value={this.state.email} readOnly className="mt-3"/>
-                      <MDBInput label="Subject" value={this.state.subject} readOnly className="mt-3"/>
-                      <h3 className="font-weight-bold pl-0 my-4"><strong>Preview</strong></h3>
-                      <MDBInput label="Template" type="textarea" id="templatetext" rows="6" value={this.state.preview}/>
+                      
+                      <h3 className="font-weight-bold pl-0 my-4"><strong>Previews</strong></h3>
+                      {this.PreviewCreator()}
+                     
                       <MDBBtn color="mdb-color" rounded className="float-right" onClick={this.handleNextPrevClick(1)(1)}>Return to start</MDBBtn>
                       </div>)}
                       {this.state.isLoading && (
