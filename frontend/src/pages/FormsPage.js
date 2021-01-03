@@ -143,10 +143,21 @@ PreviewCreator(){
   );
 
 };
-handleChange = (newValue, actionMeta) => {
+validateEmail(email) {
+  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
+}
+handleChange = (fnewValue, actionMeta) => {
+  var newValue = fnewValue;
+  newValue = newValue.filter((val)=>{
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(val.label).toLowerCase());
+  });
   console.group('Value Changed');
   console.log(newValue);
+
   this.state.members = newValue.map((val)=>{return val.label});
+  this
   this.setState({
     members : this.state.members,
     emails: newValue
