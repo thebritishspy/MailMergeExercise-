@@ -18,14 +18,6 @@ Use React and Nextjs.  Add more packages as needed.
 - The app shows whether the email was successfully sent, otherwise displays an error message.
 
 
-## Backend API
-
-Use Express and SendGrid.  Add more packages (such as a template engine, not required) as needed.
-
-- Render the template and return the result to the front end.
-- Send the email to the recipient using the SendGrid API (see below for link).
-
-
 ## Example template and fields
 
 ```
