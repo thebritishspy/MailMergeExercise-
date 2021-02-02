@@ -17,6 +17,11 @@ Use React and Nextjs.  Add more packages as needed.
 - The user clicks the Send button.
 - The app shows whether the email was successfully sent, otherwise displays an error message.
 
+## Install and run app
+
+- Run npm install in /frontend and /mail-backend
+- Run the run.bat file in the home directory
+
 
 ## Example template and fields
 
