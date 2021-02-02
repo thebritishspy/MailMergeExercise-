@@ -45,14 +45,5 @@ renewal_date => January 1, 2021
 membership_fee => $50
 ```
 
-## SendGrid
-
-Get a free account for SendGrid here: 
-
-  https://app.sendgrid.com/signup
-
-## Submit your entry
-
-Submit a pull request to this repo.
 
 
